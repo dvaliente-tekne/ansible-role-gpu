@@ -1,0 +1,79 @@
+#SPDX-License-Identifier: MIT-0
+---
+# tasks file for ./ansible-role-gpu
+
+# =============================================================================
+# GPU Driver Installation
+# =============================================================================
+
+- name: Set GPU type based on hostname
+  ansible.builtin.set_fact:
+    gpu_type: "{{ 'nvidia' if hostname == gpu_nvidia_hostname else 'intel' }}"
+    gpu_packages: "{{ gpu_nvidia_packages if hostname == gpu_nvidia_hostname else gpu_intel_packages }}"
+  tags:
+    - gpu
+    - config
+
+- name: Display GPU configuration
+  ansible.builtin.debug:
+    msg: "Host: {{ hostname }} | GPU Type: {{ gpu_type }} | Packages: {{ gpu_packages | length }}"
+  tags:
+    - gpu
+    - config
+
+# =============================================================================
+# NVIDIA Installation (yugen)
+# =============================================================================
+
+- name: Install NVIDIA packages
+  community.general.pacman:
+    name: "{{ gpu_nvidia_packages }}"
+    state: present
+  register: nvidia_install_result
+  when: hostname == gpu_nvidia_hostname
+  tags:
+    - gpu
+    - nvidia
+    - packages
+
+# =============================================================================
+# Intel/Mesa Installation (other hosts)
+# =============================================================================
+
+- name: Install Intel/Mesa packages
+  community.general.pacman:
+    name: "{{ gpu_intel_packages }}"
+    state: present
+  register: intel_install_result
+  when: hostname != gpu_nvidia_hostname
+  tags:
+    - gpu
+    - intel
+    - packages
+
+# =============================================================================
+# Verification
+# =============================================================================
+
+- name: Verify GPU packages are installed
+  ansible.builtin.command:
+    cmd: "pacman -Q {{ item }}"
+  loop: "{{ gpu_packages }}"
+  register: gpu_package_verify
+  changed_when: false
+  failed_when: gpu_package_verify.rc != 0
+  tags:
+    - gpu
+    - verify
+
+- name: Display GPU installation summary
+  ansible.builtin.debug:
+    msg: |
+      GPU Installation Summary for {{ hostname }}:
+      =============================================
+      GPU Type: {{ gpu_type | upper }}
+      Packages installed: {{ gpu_packages | join(', ') }}
+      Installation successful: {{ (nvidia_install_result is success) if hostname == gpu_nvidia_hostname else (intel_install_result is success) }}
+  tags:
+    - gpu
+    - verify
