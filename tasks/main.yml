@@ -29,6 +29,7 @@
   community.general.pacman:
     name: "{{ gpu_nvidia_packages }}"
     state: present
+    extra_args: '--noconfirm --needed'
   register: nvidia_install_result
   when: hostname == gpu_nvidia_hostname
   tags:
@@ -44,6 +45,7 @@
   community.general.pacman:
     name: "{{ gpu_intel_packages }}"
     state: present
+    extra_args: '--noconfirm --needed'
   register: intel_install_result
   when: hostname != gpu_nvidia_hostname
   tags:
