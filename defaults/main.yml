@@ -2,8 +2,8 @@
 ---
 # defaults file for ./ansible-role-gpu
 
-# Hostname that uses NVIDIA GPU
-gpu_nvidia_hostname: "yugen"
+# Hostname that uses NVIDIA GPU (must match playbook hostname casing, e.g. YUGEN)
+gpu_nvidia_hostname: "YUGEN"
 
 # NVIDIA packages (for yugen)
 gpu_nvidia_packages:
