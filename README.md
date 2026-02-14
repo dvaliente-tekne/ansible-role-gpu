@@ -11,7 +11,7 @@ Installs GPU drivers based on hostname. NVIDIA drivers for `yugen`, Intel/Mesa d
 ## Requirements
 
 - `community.general` collection (for `pacman` module)
-- `ansible-role-hostname` must run before this role (provides `hostname` variable)
+- GPU host check uses `ansible_hostname` (from gathered facts); no extra role required
 
 ```bash
 ansible-galaxy collection install community.general
@@ -37,15 +37,14 @@ ansible-galaxy collection install community.general
 
 ## Dependencies
 
-- **ansible-role-hostname**: Provides the `hostname` variable for driver selection
+None. The role uses Ansible's `ansible_hostname` fact to choose NVIDIA vs Intel/Mesa (when it matches `gpu_nvidia_hostname`, case-insensitive).
 
 ## Example Playbook
 
 ```yaml
 - hosts: workstations
   roles:
-    - ansible-role-hostname   # Sets hostname variable
-    - ansible-role-gpu        # Installs appropriate GPU drivers
+    - ansible-role-gpu   # Installs NVIDIA on host matching gpu_nvidia_hostname (default: YUGEN), Intel/Mesa otherwise
 ```
 
 ## Tags
