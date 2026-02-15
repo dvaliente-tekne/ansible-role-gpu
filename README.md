@@ -1,6 +1,6 @@
 # GPU Role
 
-Installs GPU drivers based on hostname. NVIDIA drivers for `yugen`, Intel/Mesa drivers for all other hosts.
+Installs GPU drivers based on hostname. NVIDIA drivers for the host matching `gpu_nvidia_hostname` (default **YUGEN**), Intel/Mesa drivers for all other hosts.
 
 ## What It Does
 
@@ -21,7 +21,7 @@ ansible-galaxy collection install community.general
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `gpu_nvidia_hostname` | `yugen` | Hostname that uses NVIDIA GPU |
+| `gpu_nvidia_hostname` | `YUGEN` | Hostname that uses NVIDIA GPU (case-insensitive) |
 | `gpu_nvidia_packages` | See defaults | NVIDIA packages |
 | `gpu_intel_packages` | See defaults | Intel/Mesa packages |
 
@@ -37,7 +37,7 @@ ansible-galaxy collection install community.general
 
 ## Dependencies
 
-None. The role uses Ansible's `ansible_hostname` fact to choose NVIDIA vs Intel/Mesa (when it matches `gpu_nvidia_hostname`, case-insensitive).
+None. The role uses `ansible_hostname` (from gathered facts). When the playbook sets `hostname`/`cached_hostname` (e.g. workstation playbook), ensure fact caching or pre_tasks run so hostname is consistent; the role compares `ansible_hostname` to `gpu_nvidia_hostname`.
 
 ## Example Playbook
 
@@ -62,8 +62,8 @@ None. The role uses Ansible's `ansible_hostname` fact to choose NVIDIA vs Intel/
 
 | Hostname | GPU Type | Packages Installed |
 |----------|----------|-------------------|
-| yugen | NVIDIA | 8 NVIDIA/TKG packages |
-| Others | Intel | 4 Mesa/Vulkan packages |
+| YUGEN (default) | NVIDIA | 8 NVIDIA/TKG packages |
+| Others | Intel/Mesa | 4 Mesa/Vulkan packages |
 
 ## License
 
