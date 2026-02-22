@@ -23,9 +23,15 @@
 # GPU Driver Installation
 # =============================================================================
 
-- name: Set GPU type based on hostname
+- name: Set effective hostname for GPU role
   ansible.builtin.set_fact:
     gpu_effective_hostname: "{{ (hostname | default(ansible_hostname)) | upper }}"
+  tags:
+    - gpu
+    - config
+
+- name: Set GPU type and package list based on hostname
+  ansible.builtin.set_fact:
     gpu_type: "{{ 'nvidia' if gpu_effective_hostname == (gpu_nvidia_hostname | default('') | upper) else 'intel' }}"
     gpu_packages: "{{ gpu_nvidia_packages if gpu_effective_hostname == (gpu_nvidia_hostname | default('') | upper) else gpu_intel_packages }}"
   tags:
