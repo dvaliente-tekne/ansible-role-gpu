@@ -25,15 +25,16 @@
 
 - name: Set GPU type based on hostname
   ansible.builtin.set_fact:
-    gpu_type: "{{ 'nvidia' if (ansible_hostname | default('') | upper) == (gpu_nvidia_hostname | default('') | upper) else 'intel' }}"
-    gpu_packages: "{{ gpu_nvidia_packages if (ansible_hostname | default('') | upper) == (gpu_nvidia_hostname | default('') | upper) else gpu_intel_packages }}"
+    gpu_effective_hostname: "{{ (hostname | default(ansible_hostname)) | upper }}"
+    gpu_type: "{{ 'nvidia' if gpu_effective_hostname == (gpu_nvidia_hostname | default('') | upper) else 'intel' }}"
+    gpu_packages: "{{ gpu_nvidia_packages if gpu_effective_hostname == (gpu_nvidia_hostname | default('') | upper) else gpu_intel_packages }}"
   tags:
     - gpu
     - config
 
 - name: Display GPU configuration
   ansible.builtin.debug:
-    msg: "Host: {{ ansible_hostname }} | GPU Type: {{ gpu_type }} | Packages: {{ gpu_packages | length }}"
+    msg: "Host: {{ gpu_effective_hostname }} | GPU Type: {{ gpu_type }} | Packages: {{ gpu_packages | length }}"
   tags:
     - gpu
     - config
@@ -48,7 +49,7 @@
     state: present
     extra_args: '--noconfirm --needed'
   register: nvidia_install_result
-  when: (ansible_hostname | default('') | upper) == (gpu_nvidia_hostname | default('') | upper)
+  when: gpu_effective_hostname == (gpu_nvidia_hostname | default('') | upper)
   tags:
     - gpu
     - nvidia
@@ -64,7 +65,6 @@
     state: present
     extra_args: '--noconfirm --needed'
   register: intel_install_result
-  when: (ansible_hostname | default('') | upper) != (gpu_nvidia_hostname | default('') | upper)
   tags:
     - gpu
     - intel
@@ -88,11 +88,11 @@
 - name: Display GPU installation summary
   ansible.builtin.debug:
     msg: |
-      GPU Installation Summary for {{ ansible_hostname }}:
+      GPU Installation Summary for {{ gpu_effective_hostname }}:
       =============================================
       GPU Type: {{ gpu_type | upper }}
       Packages installed: {{ gpu_packages | join(', ') }}
-      Installation successful: {{ (nvidia_install_result is success) if (ansible_hostname | default('') | upper) == (gpu_nvidia_hostname | default('') | upper) else (intel_install_result is success) }}
+      Installation successful: {{ (nvidia_install_result is success) if gpu_effective_hostname == (gpu_nvidia_hostname | default('') | upper) else (intel_install_result is success) }}
   tags:
     - gpu
     - verify
