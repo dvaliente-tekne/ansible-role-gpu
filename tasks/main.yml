@@ -29,6 +29,10 @@
   tags:
     - gpu
     - config
+    - packages
+    - nvidia
+    - intel
+    - verify
 
 - name: Set GPU type and package list based on hostname
   ansible.builtin.set_fact:
@@ -37,6 +41,10 @@
   tags:
     - gpu
     - config
+    - packages
+    - nvidia
+    - intel
+    - verify
 
 - name: Display GPU configuration
   ansible.builtin.debug:
